@@ -11,11 +11,11 @@ services:
       - "19132:19132/udp" # BEDROCK
       - "25500-25600:25500-25600" # MC SERVER PORT RANGE
     volumes:
-      - /srv/docker/crafty-4/backups:/crafty/backups
-      - /srv/docker/crafty-4/logs:/crafty/logs
-      - /srv/docker/crafty-4/servers:/crafty/servers
-      - /srv/docker/crafty-4/config:/crafty/app/config
-      - /srv/docker/crafty-4/import:/crafty/import
+      - /srv/docker/minecraft-proxy/crafty/backups:/crafty/backups
+      - /srv/docker/minecraft-proxy/crafty/logs:/crafty/logs
+      - /srv/docker/minecraft-proxy/crafty/servers:/crafty/servers
+      - /srv/docker/minecraft-proxy/crafty/config:/crafty/app/config
+      - /srv/docker/minecraft-proxy/crafty/import:/crafty/import
     networks:
       - big-bear-crafty
 
@@ -26,7 +26,7 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./nginx/templates:/etc/nginx/templates:ro
+      - /srv/docker/minecraft-proxy/nginx/templates:/etc/nginx/templates:ro
     environment:
       - CRAFTY_HOST=${CRAFTY_HOST:-big-bear-crafty}
       - CRAFTY_PORT=${CRAFTY_PORT:-8443}

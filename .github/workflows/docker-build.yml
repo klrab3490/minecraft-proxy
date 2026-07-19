@@ -7,6 +7,7 @@ on:
       - "v*"
     paths:
       - "ui/**"
+      - "docker-compose*.yml"
       - ".github/workflows/docker-build.yml"
   workflow_dispatch:
 
@@ -15,11 +16,35 @@ env:
   IMAGE_NAME: ${{ github.repository }}/minecraft-ui
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      ui: ${{ steps.filter.outputs.ui }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            ui:
+              - 'ui/**'
+
   test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
+
+      - name: Validate YAML syntax
+        run: |
+          pip install yamllint
+          yamllint -d "{extends: default, rules: {line-length: disable, document-start: disable, truthy: disable}}" docker-compose.yml docker-compose.portainer.yml
+
+      - name: Validate docker-compose files
+        run: |
+          for f in docker-compose.yml docker-compose.portainer.yml; do
+            docker compose -f "$f" config -q
+          done
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -42,7 +67,8 @@ jobs:
         working-directory: ui
 
   build-and-push:
-    needs: test
+    needs: [test, changes]
+    if: needs.changes.outputs.ui == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
