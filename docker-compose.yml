@@ -6,10 +6,10 @@ services:
     environment:
       - TZ=Asia/Kolkata
     ports:
-      - "8443:8443" # HTTPS
-      - "8123:8123" # DYNMAP
-      - "19132:19132/udp" # BEDROCK
-      - "25500-25600:25500-25600" # MC SERVER PORT RANGE
+      - "8443:8443"  # HTTPS
+      - "8123:8123"  # DYNMAP
+      - "19132:19132/udp"  # BEDROCK
+      - "25500-25600:25500-25600"  # MC SERVER PORT RANGE
     volumes:
       - ./docker/backups:/crafty/backups
       - ./docker/logs:/crafty/logs
