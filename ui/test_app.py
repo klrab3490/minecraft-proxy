@@ -53,6 +53,19 @@ class AppTests(unittest.TestCase):
         )
         self.assertEqual(resp.get_json(), {"address": "host:1234"})
 
+    @patch.object(app_module, "NGROK_REMOTE_ADDR", "0.tcp.ngrok.io:12345")
+    @patch("app.requests")
+    def test_connect_passes_reserved_remote_addr_when_set(self, requests):
+        requests.get.return_value = mock_response({"tunnels": []})
+        requests.post.return_value = mock_response({"public_url": "tcp://host:1234"})
+
+        self.client.post("/api/connect", json={"port": 25566})
+
+        self.assertEqual(
+            requests.post.call_args.kwargs["json"]["remote_addr"],
+            "0.tcp.ngrok.io:12345",
+        )
+
     @patch("app.requests")
     def test_status_reports_no_tunnel(self, requests):
         requests.get.return_value = mock_response({"tunnels": []})

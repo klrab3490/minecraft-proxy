@@ -1,0 +1,8 @@
+version: 3
+agent:
+  web_addr: 0.0.0.0:4041
+tunnels:
+  dashboard:
+    proto: http
+    addr: ui:8080
+    domain: haven-dizziness-penalty.ngrok-free.dev

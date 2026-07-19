@@ -37,11 +37,14 @@ services:
     image: ngrok/ngrok:latest
     container_name: ngrok-minecraft
     restart: unless-stopped
-    # no static tunnel - the ui service starts/stops tunnels at runtime via the
-    # ngrok agent API (localhost:4041), since free ngrok only allows one at a time
-    command: start --none --web-addr 0.0.0.0:4041
+    # "dashboard" is the static http tunnel from ngrok.yml (always on); the
+    # ui service starts/stops the Minecraft tcp tunnel at runtime via the
+    # ngrok agent API (localhost:4041)
+    command: start dashboard
     environment:
       - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+    volumes:
+      - ./ngrok/ngrok.yml:/var/lib/ngrok/ngrok.yml:ro
     networks:
       - big-bear-crafty
 
@@ -54,6 +57,7 @@ services:
     environment:
       - CRAFTY_API_TOKEN=${CRAFTY_API_TOKEN}
       - CRAFTY_BASE_URL=${CRAFTY_BASE_URL:-https://big-bear-crafty:8443/api/v2}
+      - NGROK_REMOTE_ADDR=${NGROK_REMOTE_ADDR}
     networks:
       - big-bear-crafty
 

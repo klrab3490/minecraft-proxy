@@ -8,6 +8,9 @@ from load_env import load_env
 load_env()
 
 NGROK_API = os.environ.get("NGROK_API", "http://ngrok-minecraft:4041/api/tunnels")
+NGROK_REMOTE_ADDR = os.environ.get(
+    "NGROK_REMOTE_ADDR"
+)  # reserved TCP address, e.g. 0.tcp.ngrok.io:12345
 TARGET_HOST = os.environ.get("MC_HOST", "big-bear-crafty")
 CRAFTY_BASE = os.environ.get("CRAFTY_BASE_URL", "https://big-bear-crafty:8443/api/v2")
 CRAFTY_TOKEN = os.environ["CRAFTY_API_TOKEN"]
@@ -96,11 +99,10 @@ def connect():
     if existing:
         requests.delete(f"{NGROK_API}/{existing['name']}", timeout=5)
 
-    r = requests.post(
-        NGROK_API,
-        json={"name": TUNNEL_NAME, "proto": "tcp", "addr": f"{TARGET_HOST}:{port}"},
-        timeout=10,
-    )
+    tunnel = {"name": TUNNEL_NAME, "proto": "tcp", "addr": f"{TARGET_HOST}:{port}"}
+    if NGROK_REMOTE_ADDR:
+        tunnel["remote_addr"] = NGROK_REMOTE_ADDR
+    r = requests.post(NGROK_API, json=tunnel, timeout=10)
     r.raise_for_status()
     return jsonify({"address": r.json()["public_url"].replace("tcp://", "")})
 

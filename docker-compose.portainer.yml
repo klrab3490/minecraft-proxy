@@ -39,9 +39,11 @@ services:
     restart: unless-stopped
     # no static tunnel - the ui service starts/stops tunnels at runtime via the
     # ngrok agent API (localhost:4041), since free ngrok only allows one at a time
-    command: start --none --web-addr 0.0.0.0:4041
+    command: start --none
     environment:
       - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+    volumes:
+      - /srv/docker/minecraft-proxy/ngrok/ngrok.yml:/var/lib/ngrok/ngrok.yml:ro
     networks:
       - big-bear-crafty
 
