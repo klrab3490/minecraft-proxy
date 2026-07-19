@@ -15,7 +15,34 @@ env:
   IMAGE_NAME: ${{ github.repository }}/minecraft-ui
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install dependencies
+        run: pip install -r ui/requirements.txt
+
+      - name: Lint
+        run: ruff check .
+        working-directory: ui
+
+      - name: Check formatting
+        run: black --check .
+        working-directory: ui
+
+      - name: Run tests
+        run: python -m unittest test_app.py
+        working-directory: ui
+
   build-and-push:
+    needs: test
     runs-on: ubuntu-latest
     permissions:
       contents: read

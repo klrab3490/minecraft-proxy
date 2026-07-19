@@ -55,12 +55,14 @@ def servers():
     raw = crafty("GET", "/servers")
     out = []
     for s in raw:
-        out.append({
-            "id": s.get("server_id") or s.get("id"),
-            "name": s.get("server_name") or s.get("name"),
-            "port": s.get("server_port") or s.get("port"),
-            "running": bool(s.get("running")),
-        })
+        out.append(
+            {
+                "id": s.get("server_id") or s.get("id"),
+                "name": s.get("server_name") or s.get("name"),
+                "port": s.get("server_port") or s.get("port"),
+                "running": bool(s.get("running")),
+            }
+        )
     return jsonify(out)
 
 
@@ -69,7 +71,12 @@ def status():
     t = active_tunnel()
     if not t:
         return jsonify({"connected": None, "address": None})
-    return jsonify({"connected": t["config"]["addr"], "address": t["public_url"].replace("tcp://", "")})
+    return jsonify(
+        {
+            "connected": t["config"]["addr"],
+            "address": t["public_url"].replace("tcp://", ""),
+        }
+    )
 
 
 @app.post("/api/servers/<server_id>/<action>")

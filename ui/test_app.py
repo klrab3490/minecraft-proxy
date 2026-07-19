@@ -25,7 +25,12 @@ class AppTests(unittest.TestCase):
     @patch.object(app_module, "crafty")
     def test_servers_maps_crafty_fields(self, crafty):
         crafty.return_value = [
-            {"server_id": "1", "server_name": "survival", "server_port": 25565, "running": True}
+            {
+                "server_id": "1",
+                "server_name": "survival",
+                "server_port": 25565,
+                "running": True,
+            }
         ]
         resp = self.client.get("/api/servers")
         self.assertEqual(
