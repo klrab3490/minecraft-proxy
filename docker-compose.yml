@@ -1,0 +1,42 @@
+services:
+  nginx-minecraft:
+    image: nginx:stable
+    container_name: nginx-minecraft
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/templates:/etc/nginx/templates:ro
+    environment:
+      - CRAFTY_HOST=${CRAFTY_HOST:-big-bear-crafty}
+      - CRAFTY_PORT=${CRAFTY_PORT:-8443}
+    networks:
+      - big-bear-crafty
+
+  ngrok-minecraft:
+    image: ngrok/ngrok:latest
+    container_name: ngrok-minecraft
+    restart: unless-stopped
+    # no static tunnel - the ui service starts/stops tunnels at runtime via the
+    # ngrok agent API (localhost:4041), since free ngrok only allows one at a time
+    command: start --none --web-addr 0.0.0.0:4041
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+    networks:
+      - big-bear-crafty
+
+  ui:
+    build: ./ui
+    container_name: minecraft-ui
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - CRAFTY_API_TOKEN=${CRAFTY_API_TOKEN}
+      - CRAFTY_BASE_URL=${CRAFTY_BASE_URL:-https://big-bear-crafty:8443/api/v2}
+    networks:
+      - big-bear-crafty
+
+networks:
+  big-bear-crafty:
+    external: true

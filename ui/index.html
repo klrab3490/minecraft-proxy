@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Minecraft Tunnel</title>
+<style>
+  body { font-family: sans-serif; max-width: 560px; margin: 2rem auto; }
+  #status { padding: .75rem; background: #eee; border-radius: 4px; margin-bottom: 1rem; }
+  .server { border: 1px solid #ddd; border-radius: 6px; padding: .75rem; margin-bottom: .5rem; display: flex; align-items: center; justify-content: space-between; }
+  .server .name { font-weight: bold; }
+  .server button { margin-left: .5rem; padding: .4rem .8rem; }
+  code { font-size: 1.1rem; }
+</style>
+</head>
+<body>
+<h2>Minecraft Servers</h2>
+<div id="status">loading…</div>
+<div id="servers"></div>
+<button onclick="disconnect()">Disconnect tunnel</button>
+
+<script>
+async function refreshStatus() {
+  const s = await (await fetch('/api/status')).json();
+  document.getElementById('status').innerHTML = s.address
+    ? `Connected: <code>${s.address}</code> → ${s.connected}`
+    : 'No server exposed';
+}
+
+async function loadServers() {
+  const list = await (await fetch('/api/servers')).json();
+  const div = document.getElementById('servers');
+  div.innerHTML = '';
+  for (const s of list) {
+    const row = document.createElement('div');
+    row.className = 'server';
+    row.innerHTML = `<span class="name">${s.name} (:${s.port}) ${s.running ? '🟢' : '⚪'}</span>`;
+    const startBtn = mkBtn(s.running ? 'Stop' : 'Start', () => toggleServer(s.id, s.running));
+    const connectBtn = mkBtn('Expose', () => connect(s.port));
+    row.appendChild(startBtn);
+    row.appendChild(connectBtn);
+    div.appendChild(row);
+  }
+}
+
+function mkBtn(label, onclick) {
+  const b = document.createElement('button');
+  b.textContent = label;
+  b.onclick = onclick;
+  return b;
+}
+
+async function toggleServer(id, running) {
+  const action = running ? 'stop_server' : 'start_server';
+  await fetch(`/api/servers/${id}/${action}`, { method: 'POST' });
+  await loadServers();
+}
+
+async function connect(port) {
+  await fetch('/api/connect', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({port}) });
+  await refreshStatus();
+}
+
+async function disconnect() {
+  await fetch('/api/disconnect', { method: 'POST' });
+  await refreshStatus();
+}
+
+loadServers();
+refreshStatus();
+setInterval(() => { loadServers(); refreshStatus(); }, 5000);
+</script>
+</body>
+</html>
