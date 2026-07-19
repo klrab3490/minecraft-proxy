@@ -1,4 +1,24 @@
 services:
+  big-bear-crafty:
+    container_name: big-bear-crafty
+    image: registry.gitlab.com/crafty-controller/crafty-4:latest
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Kolkata
+    ports:
+      - "8443:8443" # HTTPS
+      - "8123:8123" # DYNMAP
+      - "19132:19132/udp" # BEDROCK
+      - "25500-25600:25500-25600" # MC SERVER PORT RANGE
+    volumes:
+      - /srv/docker/crafty-4/backups:/crafty/backups
+      - /srv/docker/crafty-4/logs:/crafty/logs
+      - /srv/docker/crafty-4/servers:/crafty/servers
+      - /srv/docker/crafty-4/config:/crafty/app/config
+      - /srv/docker/crafty-4/import:/crafty/import
+    networks:
+      - big-bear-crafty
+
   nginx-minecraft:
     image: nginx:stable
     container_name: nginx-minecraft
@@ -39,4 +59,3 @@ services:
 
 networks:
   big-bear-crafty:
-    external: true

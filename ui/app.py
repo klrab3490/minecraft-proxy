@@ -3,7 +3,11 @@ import os
 import requests
 from flask import Flask, jsonify, request, send_from_directory
 
-NGROK_API = "http://ngrok-minecraft:4041/api/tunnels"
+from load_env import load_env
+
+load_env()
+
+NGROK_API = os.environ.get("NGROK_API", "http://ngrok-minecraft:4041/api/tunnels")
 TARGET_HOST = os.environ.get("MC_HOST", "big-bear-crafty")
 CRAFTY_BASE = os.environ.get("CRAFTY_BASE_URL", "https://big-bear-crafty:8443/api/v2")
 CRAFTY_TOKEN = os.environ["CRAFTY_API_TOKEN"]
@@ -31,8 +35,12 @@ def index():
 
 
 def active_tunnel():
-    r = requests.get(NGROK_API, timeout=5)
-    r.raise_for_status()
+    try:
+        r = requests.get(NGROK_API, timeout=5)
+        r.raise_for_status()
+    except requests.exceptions.RequestException:
+        # ponytail: ngrok not wired up yet, treat as "no tunnel" until it's added
+        return None
     for t in r.json().get("tunnels", []):
         if t["proto"] == "tcp":
             return t
